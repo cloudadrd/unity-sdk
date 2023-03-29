@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,9 +18,9 @@ namespace DataEyeAnalytics.Wrapper
         [DllImport("__Internal")]
         private static extern string get_distinct_id(string app_id);
         [DllImport("__Internal")]
-        private static extern void login(string app_id, string account_id);
+        private static extern void ta_login(string app_id, string account_id);
         [DllImport("__Internal")]
-        private static extern void logout(string app_id);
+        private static extern void ta_logout(string app_id);
         [DllImport("__Internal")]
         private static extern void track(string app_id, string event_name, string properties, long time_stamp_millis, string timezone);
         [DllImport("__Internal")]
@@ -105,12 +105,12 @@ namespace DataEyeAnalytics.Wrapper
 
         private void login(string accountId)
         {
-            login(token.appid, accountId);
+            ta_login(token.appid, accountId);
         }
 
         private void logout()
         {
-            logout(token.appid);
+            ta_logout(token.appid);
         }
 
         private void flush()
@@ -122,19 +122,19 @@ namespace DataEyeAnalytics.Wrapper
             config_custom_lib_info(lib_name, lib_version);
         }
 
-        private void track(ThinkingAnalyticsEvent taEvent)
+        private void track(DataEyeAnalyticsEvent taEvent)
         {
             Dictionary<string, object> finalEvent = new Dictionary<string, object>();
             string extraId = taEvent.ExtraId;
             switch (taEvent.EventType)
             {
-                case ThinkingAnalyticsEvent.Type.FIRST:
+                case DataEyeAnalyticsEvent.Type.FIRST:
                     finalEvent["event_type"] = "track_first";
                     break;
-                case ThinkingAnalyticsEvent.Type.UPDATABLE:
+                case DataEyeAnalyticsEvent.Type.UPDATABLE:
                     finalEvent["event_type"] = "track_update";
                     break;
-                case ThinkingAnalyticsEvent.Type.OVERWRITABLE:
+                case DataEyeAnalyticsEvent.Type.OVERWRITABLE:
                     finalEvent["event_type"] = "track_overwrite";
                     break;
             }
@@ -150,7 +150,7 @@ namespace DataEyeAnalytics.Wrapper
             if (taEvent.EventTime != DateTime.MinValue) 
             {
                 finalEvent["event_time"] = taEvent.EventTime;
-                if (token.timeZone == ThinkingAnalyticsAPI.TATimeZone.Local)
+                if (token.timeZone == DataEyeAnalyticsAPI.TATimeZone.Local)
                 {
                     switch (taEvent.EventTime.Kind)
                     {
@@ -181,7 +181,7 @@ namespace DataEyeAnalytics.Wrapper
             long currentMillis = (dateTimeTicksUTC - dtFrom.Ticks) / 10000;
 
             string tz = "";
-            if (token.timeZone == ThinkingAnalyticsAPI.TATimeZone.Local)
+            if (token.timeZone == DataEyeAnalyticsAPI.TATimeZone.Local)
             {
                 switch(dateTime.Kind)
                 {
@@ -221,7 +221,7 @@ namespace DataEyeAnalytics.Wrapper
         private Dictionary<string, object> getSuperProperties()
         {
             string superPropertiesString = get_super_properties(token.appid);
-            return TD_MiniJSON.Deserialize(superPropertiesString);
+            return DE_MiniJSON.Deserialize(superPropertiesString);
         }
 
         private void timeEvent(string eventName)
@@ -313,7 +313,7 @@ namespace DataEyeAnalytics.Wrapper
             user_append_with_time(token.appid, properties, currentMillis);
         }
 
-        private void setNetworkType(ThinkingAnalyticsAPI.NetworkType networkType)
+        private void setNetworkType(DataEyeAnalyticsAPI.NetworkType networkType)
         {
             set_network_type((int)networkType);
         }
@@ -343,7 +343,7 @@ namespace DataEyeAnalytics.Wrapper
             enable_tracking(token.appid, enabled);
         }
 
-        private DataEyeAnalyticsWrapper createLightInstance(ThinkingAnalyticsAPI.Token delegateToken)
+        private DataEyeAnalyticsWrapper createLightInstance(DataEyeAnalyticsAPI.Token delegateToken)
         {
             create_light_instance(token.appid, delegateToken.appid);
             return new DataEyeAnalyticsWrapper(delegateToken, false);
